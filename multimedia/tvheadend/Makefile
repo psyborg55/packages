@@ -8,12 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tvheadend
-PKG_VERSION:=4.0.10
-PKG_RELEASE:=4
+PKG_VERSION:=4.4.0
+PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/tvheadend/tvheadend/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=f610e7d9f3bf6cff05cd73830a66ee0c74bc5291c4c9d08369364c4c681ebf23
+PKG_SOURCE_URL:=https://github.com/tvheadend/tvheadend.git
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_DATE:=2020-12-29
+PKG_SOURCE_VERSION:=aaca05cc1087e0786eb2b41f050ee8fd3e66c728
+PKG_HASH:=39244329233e89fccb92ca9a3ea440c13bffcebdd647421fe9fc53ab7bed53ff
 
 PKG_LICENSE:=GPL-3.0
 PKG_LICENSE_FILES:=LICENSE.md
@@ -29,7 +31,7 @@ define Package/tvheadend
   SECTION:=multimedia
   CATEGORY:=Multimedia
   TITLE:=Tvheadend is a TV streaming server for Linux
-  DEPENDS:=+libopenssl +librt +zlib +TVHEADEND_AVAHI_SUPPORT:libavahi-client $(ICONV_DEPENDS)
+  DEPENDS:=+libdvbcsa +libopenssl +librt +zlib +TVHEADEND_AVAHI_SUPPORT:libavahi-client $(ICONV_DEPENDS)
   URL:=https://tvheadend.org
   MAINTAINER:=Jan Čermák <jan.cermak@nic.cz>
 endef
@@ -66,11 +68,41 @@ else
   CONFIGURE_ARGS += --enable-avahi
 endif
 
+ifeq ($(CONFIG_TVHEADEND_HDHOMERUN_CLIENT_SUPPORT),y)
+  CONFIGURE_ARGS += --enable-hdhomerun_client
+else
+  CONFIGURE_ARGS += --disable-hdhomerun_static
+endif
+
+ifeq ($(CONFIG_TVHEADEND_DISABLE_SATIP_SERVER_SUPPORT),y)
+  CONFIGURE_ARGS += --disable-satip_server
+endif
+
+ifeq ($(CONFIG_TVHEADEND_DISABLE_SATIP_CLIENT_SUPPORT),y)
+  CONFIGURE_ARGS += --disable-satip_client
+endif
+
 CONFIGURE_ARGS += \
 	--arch=$(ARCH) \
 	--disable-dbus_1 \
 	--disable-libav \
-	--enable-bundle
+	--enable-bundle \
+	--enable-ccdebug \
+	--disable-ffmpeg_static \
+ 	--disable-libx264 \
+        --disable-libx264_static \
+        --disable-libx265 \
+        --disable-libx265_static \
+        --disable-libvpx \
+        --disable-libvpx_static \
+        --disable-libtheora \
+        --disable-libtheora_static \
+        --disable-libvorbis \
+        --disable-libvorbis_static \
+        --disable-libfdkaac \
+        --disable-libfdkaac_static \
+	--disable-libopus \
+	--disable-libopus_static \
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
